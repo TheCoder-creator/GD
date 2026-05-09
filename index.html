@@ -174,7 +174,6 @@
         }
 
         /* OTHER MODES MENU */
-
         .other-modes-container {
             position: fixed;
             top: 20px;
@@ -207,66 +206,135 @@
             flex-direction: column;
             margin-top: 10px;
         }
+
+        /* HORIZEN ADDRESS DISPLAY */
+        #hz-addr-display {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 9999;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #hz-addr-display:hover {
+            color: #00a2ff;
+            border-color: #00a2ff;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        #hz-addr-display i {
+            font-size: 10px;
+        }
     </style>
 </head>
 
 <body>
 
+    <!-- HORIZEN BLOCKER SYSTEM -->
+    <script>
+        const HZ_URL = 'https://xlisbmtenekjmundxbcn.supabase.co';
+        const HZ_KEY = 'sb_publishable_Cvs-AiKPTHrC_tfGfwlpSQ_4Hir5Cva';
+        let hzMyAddress = "";
+
+        async function initHorizenBlocker() {
+            let address = localStorage.getItem('horizen_address');
+            
+            if (!address) {
+                const digits = Math.floor(100000 + Math.random() * 900000);
+                address = `horizen.play://${digits}`;
+                localStorage.setItem('horizen_address', address);
+                
+                await fetch(`${HZ_URL}/rest/v1/users`, {
+                    method: 'POST',
+                    headers: { 
+                        'apikey': HZ_KEY, 
+                        'Content-Type': 'application/json', 
+                        'Prefer': 'return=minimal' 
+                    },
+                    body: JSON.stringify({ address: address, nickname: 'Unknown', is_blocked: false })
+                });
+            }
+
+            hzMyAddress = address;
+            document.getElementById('hz-addr-text').innerText = address;
+
+            try {
+                const res = await fetch(`${HZ_URL}/rest/v1/users?address=eq.${encodeURIComponent(address)}&select=is_blocked`, {
+                    headers: { 'apikey': HZ_KEY }
+                });
+                const data = await res.json();
+                
+                if (data.length > 0 && data[0].is_blocked === true) {
+                    window.location.href = 'https://blocked.horizensearch.com';
+                    return false; 
+                }
+            } catch (e) {}
+            return true;
+        }
+
+        function hzCopyAddress() {
+            navigator.clipboard.writeText(hzMyAddress).then(() => {
+                const el = document.getElementById('hz-addr-text');
+                el.innerText = "Copied!";
+                setTimeout(() => { el.innerText = hzMyAddress; }, 1500);
+            });
+        }
+
+        // Stop game from loading if blocked
+        initHorizenBlocker().then(allowed => {
+            if (!allowed) {
+                document.body.innerHTML = ''; // Destroy page so game doesn't load
+            }
+        });
+    </script>
+
     <div id="gameContainer"></div>
 
     <div id="loader">
-
         <img class="logo" src="image/loading.png?v=1">
-
         <div class="spinner"></div>
-
         <div class="pos_progress">
-
             <div class="progress">
-
                 <div class="posfull">
                     <img class="full" src="image/process_bar_back.png">
                 </div>
-
                 <div class="posbox">
-                    <img class="box_process"
-                        src="image/process_bar_front.png">
+                    <img class="box_process" src="image/process_bar_front.png">
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
     <!-- OTHER MODES MENU -->
-
     <div class="other-modes-container">
-
-        <button class="mode-btn" onclick="toggleModes()">
-            Other Modes
-        </button>
-
+        <button class="mode-btn" onclick="toggleModes()">Other Modes</button>
         <div class="mode-menu" id="modeMenu">
-
-            <button class="mode-btn"
-                onclick="window.location.href='https://subzero.horizensearch.com';">
-                Subzero
-            </button>
-
-            <button class="mode-btn"
-                onclick="window.location.href='https://world.horizensearch.com';">
-                World
-            </button>
-
+            <button class="mode-btn" onclick="window.location.href='https://subzero.horizensearch.com';">Subzero</button>
+            <button class="mode-btn" onclick="window.location.href='https://world.horizensearch.com';">World</button>
         </div>
-
     </div>
+
+    <!-- HORIZEN ADDRESS DISPLAY -->
+    <div id="hz-addr-display" onclick="hzCopyAddress()" title="Click to copy">
+        <i class="fas fa-fingerprint"></i>
+        <span id="hz-addr-text">Loading...</span>
+    </div>
+
+    <!-- Load Font Awesome for the fingerprint icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script src="Build/UnityLoader.js"></script>
 
     <script>
-
         var gameInstance = UnityLoader.instantiate(
             "gameContainer",
             "Build/GeometryDashLite.json",
@@ -276,171 +344,77 @@
         );
 
         function UnityProgress(gameInstance, progress) {
-
-            if (!gameInstance.Module) {
-                return;
-            }
-
+            if (!gameInstance.Module) { return; }
             const loader = document.querySelector("#loader");
-
             if (!gameInstance.progress) {
-
-                const progressBar =
-                    document.querySelector("#loader .progress");
-
+                const progressBar = document.querySelector("#loader .progress");
                 progressBar.style.display = "block";
-
-                gameInstance.progress =
-                    progressBar.querySelector(".full");
-
+                gameInstance.progress = progressBar.querySelector(".full");
                 loader.querySelector(".spinner").style.display = "none";
             }
-
-            gameInstance.progress.style.transform =
-                `scaleX(${progress})`;
-
+            gameInstance.progress.style.transform = `scaleX(${progress})`;
             if (progress === 1 && !gameInstance.removeTimeout) {
-
                 gameInstance.removeTimeout = setTimeout(function () {
-
                     loader.style.display = "none";
-
                 }, 2000);
             }
         }
 
         function toggleModes() {
-
             const menu = document.getElementById("modeMenu");
-
-            if (menu.style.display === "flex") {
-
-                menu.style.display = "none";
-
-            } else {
-
-                menu.style.display = "flex";
-            }
+            if (menu.style.display === "flex") { menu.style.display = "none"; } 
+            else { menu.style.display = "flex"; }
         }
-
     </script>
 
     <script>
-
         document.addEventListener('DOMContentLoaded', function () {
-
-            let buttondiv =
-                document.getElementsByTagName('button');
-
+            let buttondiv = document.getElementsByTagName('button');
             for (let i = 0; i < buttondiv.length; i++) {
-
-                if (buttondiv[i].innerHTML == "OK") {
-
-                    buttondiv[i].click();
-                }
+                if (buttondiv[i].innerHTML == "OK") { buttondiv[i].click(); }
             }
-
             setTimeout(function () {
-
-                let buttonok =
-                    document.getElementsByTagName('button');
-
+                let buttonok = document.getElementsByTagName('button');
                 for (let i = 0; i < buttondiv.length; i++) {
-
-                    if (buttonok[i].innerHTML == "OK") {
-
-                        buttonok[i].click();
-                    }
+                    if (buttonok[i].innerHTML == "OK") { buttonok[i].click(); }
                 }
-
             }, 1000);
         });
-
     </script>
 
-    <script
-        src="themes/geometrydashlite.io/rs/js/jquery-3.4.1.min.js"></script>
+    <script src="themes/geometrydashlite.io/rs/js/jquery-3.4.1.min.js"></script>
 
     <script>
-
         function ToggleInfo() {
-
-            if (
-                $('button.hide-main-panel')
-                .children('i')[0]
-                .textContent != 'Info'
-            ) {
-
+            if ($('button.hide-main-panel').children('i')[0].textContent != 'Info') {
                 $("div.main-panel").css('width', '0px');
-
                 $("div.main-panel-ads").css('display', 'none');
-
                 $("div.main-panel-content").css('display', 'none');
-
-                $('button.hide-main-panel')
-                    .children('i')
-                    .html('Info');
-
+                $('button.hide-main-panel').children('i').html('Info');
             } else {
-
-                $("div.main-panel")
-                    .css(
-                        'width',
-                        $("div.main-panel").css('max-width')
-                    );
-
-                $("div.main-panel-ads")
-                    .css('display', 'block');
-
-                $("div.main-panel-content")
-                    .css('display', 'block');
-
-                $('button.hide-main-panel')
-                    .children('i')
-                    .html('>>');
+                $("div.main-panel").css('width', $("div.main-panel").css('max-width'));
+                $("div.main-panel-ads").css('display', 'block');
+                $("div.main-panel-content").css('display', 'block');
+                $('button.hide-main-panel').children('i').html('>>');
             }
         }
 
         function ShowInfo() {
-
-            $("div.main-panel")
-                .css(
-                    'width',
-                    $("div.main-panel").css('max-width')
-                );
-
-            $("div.main-panel-ads")
-                .css('display', 'block');
-
-            $("div.main-panel-content")
-                .css('display', 'block');
-
-            $('button.hide-main-panel')
-                .children('i')
-                .html('>>');
+            $("div.main-panel").css('width', $("div.main-panel").css('max-width'));
+            $("div.main-panel-ads").css('display', 'block');
+            $("div.main-panel-content").css('display', 'block');
+            $('button.hide-main-panel').children('i').html('>>');
         }
 
         function HideInfo() {
-
             $("div.main-panel").css('width', '0px');
-
             $("div.main-panel-ads").css('display', 'none');
-
             $("div.main-panel-content").css('display', 'none');
-
-            $('button.hide-main-panel')
-                .children('i')
-                .html('Info');
+            $('button.hide-main-panel').children('i').html('Info');
         }
 
-        $('button.hide-main-panel').click(function () {
-
-            ToggleInfo();
-
-        });
-
+        $('button.hide-main-panel').click(function () { ToggleInfo(); });
     </script>
 
 </body>
-
 </html>
