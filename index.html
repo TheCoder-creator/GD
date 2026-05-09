@@ -33,219 +33,81 @@
     <meta name="cf-2fa-verify" content="GpoihhhSRQknehLQkEtXM">
 
     <style>
-        html {
-            box-sizing: border-box;
-        }
-
-        *,
-        *:before,
-        *:after {
-            box-sizing: inherit;
-        }
-
-        body {
-            margin: 0;
-            background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 102, 255));
-            overflow: hidden;
-        }
-
-        #gameContainer {
-            width: 100vw;
-            height: 100vh;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        canvas+* {
-            z-index: 2;
-        }
-
-        .container {
-            max-width: 1600px;
-            position: relative;
-        }
-
-        .posImg {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .logo {
-            position: absolute;
-            display: block;
-            max-width: 100vw;
-            max-height: 70vh;
-            top: 300px;
-        }
-
-        .pos_progress {
-            position: absolute;
-            bottom: 15%;
-            width: 100%;
-        }
-
-        .progress {
-            margin: 1.5em auto;
-            max-width: 436px;
-            height: auto;
-            display: none;
-            position: relative;
-        }
-
-        .full {
-            width: 97%;
-            transform-origin: top left;
-        }
-
-        .box_process {
-            width: 100%;
-        }
-
-        .process {
-            width: 98%;
-        }
-
-        .progress .posfull,
-        .progress .posbox {
-            position: absolute;
+        /* IMMEDIATE BLOCK WALL - Prevents game from loading until checked */
+        #hz-block-wall {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgb(0, 0, 0), rgb(0, 102, 255));
+            z-index: 999999;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .progress .posfull {
-            top: 8px;
-            z-index: 1;
-        }
-
-        .progress .posbox {
-            top: 0;
-            z-index: 2;
-        }
-
-        #loader {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 102, 255));
-        }
-
-        .spinner,
-        .spinner:after {
-            display: none;
-            border-radius: 50%;
-            width: 5em;
-            height: 5em;
-        }
-
-        .spinner {
-            margin: 10px;
-            font-size: 10px;
-            position: relative;
-            text-indent: -9999em;
-            border-top: 1.1em solid rgba(255, 255, 255, 0.2);
-            border-right: 1.1em solid rgba(255, 255, 255, 0.2);
-            border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
-            border-left: 1.1em solid #ffffff;
-            transform: translateZ(0);
-            animation: spinner-spin 1.1s infinite linear;
-        }
-
-        @keyframes spinner-spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* OTHER MODES MENU */
-        .other-modes-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-        }
-
-        .mode-btn {
-            background: #00a2ff;
-            color: white;
-            border: 2px solid white;
-            padding: 12px 18px;
-            margin: 5px 0;
-            cursor: pointer;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            width: 180px;
-            transition: 0.2s;
-        }
-
-        .mode-btn:hover {
-            background: #0077cc;
-            transform: scale(1.05);
-        }
-
-        .mode-menu {
-            display: none;
-            flex-direction: column;
-            margin-top: 10px;
-        }
-
-        /* HORIZEN ADDRESS DISPLAY */
-        #hz-addr-display {
-            position: fixed;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            padding: 8px 14px;
+            gap: 15px;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-            z-index: 9999;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: white;
         }
-        #hz-addr-display:hover {
-            color: #00a2ff;
-            border-color: #00a2ff;
-            background: rgba(0, 0, 0, 0.9);
+        #hz-block-wall .wall-text {
+            font-size: 16px;
+            color: rgba(255,255,255,0.7);
         }
-        #hz-addr-display i {
-            font-size: 10px;
+        #hz-block-wall .wall-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: wall-spin 1s linear infinite;
         }
+        @keyframes wall-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        html { box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 102, 255)); overflow: hidden; }
+        #gameContainer { width: 100vw; height: 100vh; }
+        canvas { width: 100%; height: 100%; display: block; }
+        canvas+* { z-index: 2; }
+        .container { max-width: 1600px; position: relative; }
+        .posImg { position: absolute; top: 0; width: 100%; height: 100%; }
+        .logo { position: absolute; display: block; max-width: 100vw; max-height: 70vh; top: 300px; }
+        .pos_progress { position: absolute; bottom: 15%; width: 100%; }
+        .progress { margin: 1.5em auto; max-width: 436px; height: auto; display: none; position: relative; }
+        .full { width: 97%; transform-origin: top left; }
+        .box_process { width: 100%; }
+        .process { width: 98%; }
+        .progress .posfull, .progress .posbox { position: absolute; display: flex; align-items: center; justify-content: center; }
+        .progress .posfull { top: 8px; z-index: 1; }
+        .progress .posbox { top: 0; z-index: 2; }
+        #loader { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 102, 255)); }
+        .spinner, .spinner:after { display: none; border-radius: 50%; width: 5em; height: 5em; }
+        .spinner { margin: 10px; font-size: 10px; position: relative; text-indent: -9999em; border-top: 1.1em solid rgba(255, 255, 255, 0.2); border-right: 1.1em solid rgba(255, 255, 255, 0.2); border-bottom: 1.1em solid rgba(255, 255, 255, 0.2); border-left: 1.1em solid #ffffff; transform: translateZ(0); animation: spinner-spin 1.1s infinite linear; }
+        @keyframes spinner-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .other-modes-container { position: fixed; top: 20px; right: 20px; z-index: 9999; font-family: Arial, sans-serif; }
+        .mode-btn { background: #00a2ff; color: white; border: 2px solid white; padding: 12px 18px; margin: 5px 0; cursor: pointer; border-radius: 10px; font-size: 16px; font-weight: bold; width: 180px; transition: 0.2s; }
+        .mode-btn:hover { background: #0077cc; transform: scale(1.05); }
+        .mode-menu { display: none; flex-direction: column; margin-top: 10px; }
+
+        #hz-addr-display { position: fixed; bottom: 15px; left: 15px; background: rgba(0, 0, 0, 0.75); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 8px 14px; font-family: 'Courier New', Courier, monospace; font-size: 12px; color: rgba(255, 255, 255, 0.6); z-index: 9999; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        #hz-addr-display:hover { color: #00a2ff; border-color: #00a2ff; background: rgba(0, 0, 0, 0.9); }
+        #hz-addr-display i { font-size: 10px; }
     </style>
 </head>
 
 <body>
 
-    <!-- HORIZEN BLOCKER SYSTEM -->
+    <!-- BLOCKING WALL: Blocks screen until check is done -->
+    <div id="hz-block-wall">
+        <div class="wall-spinner"></div>
+        <div class="wall-text">Connecting...</div>
+    </div>
+
     <script>
         const HZ_URL = 'https://xlisbmtenekjmundxbcn.supabase.co';
         const HZ_KEY = 'sb_publishable_Cvs-AiKPTHrC_tfGfwlpSQ_4Hir5Cva';
         let hzMyAddress = "";
 
-        async function initHorizenBlocker() {
+        (async function() {
             let address = localStorage.getItem('horizen_address');
             
             if (!address) {
@@ -253,19 +115,16 @@
                 address = `horizen.play://${digits}`;
                 localStorage.setItem('horizen_address', address);
                 
-                await fetch(`${HZ_URL}/rest/v1/users`, {
+                fetch(`${HZ_URL}/rest/v1/users`, {
                     method: 'POST',
-                    headers: { 
-                        'apikey': HZ_KEY, 
-                        'Content-Type': 'application/json', 
-                        'Prefer': 'return=minimal' 
-                    },
+                    headers: { 'apikey': HZ_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
                     body: JSON.stringify({ address: address, nickname: 'Unknown', is_blocked: false })
-                });
+                }).catch(() => {});
             }
 
             hzMyAddress = address;
-            document.getElementById('hz-addr-text').innerText = address;
+            const txtEl = document.getElementById('hz-addr-text');
+            if(txtEl) txtEl.innerText = address;
 
             try {
                 const res = await fetch(`${HZ_URL}/rest/v1/users?address=eq.${encodeURIComponent(address)}&select=is_blocked`, {
@@ -274,27 +133,14 @@
                 const data = await res.json();
                 
                 if (data.length > 0 && data[0].is_blocked === true) {
-                    window.location.href = 'https://blocked.horizensearch.com';
-                    return false; 
+                    window.location.replace('https://blocked.horizensearch.com');
+                    return; 
                 }
             } catch (e) {}
-            return true;
-        }
 
-        function hzCopyAddress() {
-            navigator.clipboard.writeText(hzMyAddress).then(() => {
-                const el = document.getElementById('hz-addr-text');
-                el.innerText = "Copied!";
-                setTimeout(() => { el.innerText = hzMyAddress; }, 1500);
-            });
-        }
-
-        // Stop game from loading if blocked
-        initHorizenBlocker().then(allowed => {
-            if (!allowed) {
-                document.body.innerHTML = ''; // Destroy page so game doesn't load
-            }
-        });
+            // SAFE! Remove the wall so the game can load
+            document.getElementById('hz-block-wall').style.display = 'none';
+        })();
     </script>
 
     <div id="gameContainer"></div>
@@ -304,17 +150,12 @@
         <div class="spinner"></div>
         <div class="pos_progress">
             <div class="progress">
-                <div class="posfull">
-                    <img class="full" src="image/process_bar_back.png">
-                </div>
-                <div class="posbox">
-                    <img class="box_process" src="image/process_bar_front.png">
-                </div>
+                <div class="posfull"><img class="full" src="image/process_bar_back.png"></div>
+                <div class="posbox"><img class="box_process" src="image/process_bar_front.png"></div>
             </div>
         </div>
     </div>
 
-    <!-- OTHER MODES MENU -->
     <div class="other-modes-container">
         <button class="mode-btn" onclick="toggleModes()">Other Modes</button>
         <div class="mode-menu" id="modeMenu">
@@ -323,25 +164,17 @@
         </div>
     </div>
 
-    <!-- HORIZEN ADDRESS DISPLAY -->
     <div id="hz-addr-display" onclick="hzCopyAddress()" title="Click to copy">
         <i class="fas fa-fingerprint"></i>
         <span id="hz-addr-text">Loading...</span>
     </div>
 
-    <!-- Load Font Awesome for the fingerprint icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script src="Build/UnityLoader.js"></script>
 
     <script>
-        var gameInstance = UnityLoader.instantiate(
-            "gameContainer",
-            "Build/GeometryDashLite.json",
-            {
-                onProgress: UnityProgress
-            }
-        );
+        var gameInstance = UnityLoader.instantiate("gameContainer", "Build/GeometryDashLite.json", { onProgress: UnityProgress });
 
         function UnityProgress(gameInstance, progress) {
             if (!gameInstance.Module) { return; }
@@ -354,9 +187,7 @@
             }
             gameInstance.progress.style.transform = `scaleX(${progress})`;
             if (progress === 1 && !gameInstance.removeTimeout) {
-                gameInstance.removeTimeout = setTimeout(function () {
-                    loader.style.display = "none";
-                }, 2000);
+                gameInstance.removeTimeout = setTimeout(function () { loader.style.display = "none"; }, 2000);
             }
         }
 
